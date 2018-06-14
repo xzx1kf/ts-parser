@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -23,12 +24,35 @@ func parse(n *html.Node) {
 	}
 }
 
+func parseByTokenizer(r io.Reader) {
+	z := html.NewTokenizer(r)
+
+	for {
+		tt := z.Next()
+
+		switch {
+		case tt == html.ErrorToken:
+			return
+		case tt == html.StartTagToken:
+			t := z.Token()
+
+			isAnchor := t.Data == "a"
+			if isAnchor {
+				fmt.Println("We found a link!")
+				for _, a := range t.Attr {
+					fmt.Println("\t"+a.Key+":"+a.Val)
+				}
+			}
+		}
+	}
+}
 
 func main() {
 	dat, err := ioutil.ReadFile("ts.html")
 	if err != nil {
 		panic(err)
 	}
+	parseByTokenizer(strings.NewReader(string(dat)))
 	//fmt.Print(string(dat))
 
 	doc, err := html.Parse(strings.NewReader(string(dat)))
