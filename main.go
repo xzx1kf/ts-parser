@@ -2,63 +2,62 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
-	"strings"
+	"net/http"
 
-	"golang.org/x/net/html"
+	"github.com/PuerkitoBio/goquery"
 )
 
-func parse(n *html.Node) {
-	if n.Type == html.ElementNode && n.Data == "a" {
-		for _, a := range n.Attr {
-			if a.Key == "href" {
-				fmt.Println(a.Val)
-				break
-			}
-		}
-	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		parse(c)
-	}
+type booking struct {
+	court		int
+	days		int
+	hour		int
+	min		int
+	timeslot	int
+	playerA		string
+	playerB		string
+	booking_link	string
+	booked		bool
 }
 
-func parseByTokenizer(r io.Reader) {
-	z := html.NewTokenizer(r)
-
-	for {
-		tt := z.Next()
-
-		switch {
-		case tt == html.ErrorToken:
-			return
-		case tt == html.StartTagToken:
-			t := z.Token()
-
-			isAnchor := t.Data == "a"
-			if isAnchor {
-				fmt.Println("We found a link!")
-				for _, a := range t.Attr {
-					fmt.Println("\t"+a.Key+":"+a.Val)
-				}
-			}
-		}
-	}
-}
-
-func main() {
-	dat, err := ioutil.ReadFile("ts.html")
+func ExampleScrape() {
+	res, err := http.Get("http://tynemouth-squash.herokuapp.com/bookings?day=0")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	parseByTokenizer(strings.NewReader(string(dat)))
-	//fmt.Print(string(dat))
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+	}
 
-	doc, err := html.Parse(strings.NewReader(string(dat)))
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	parse(doc)
+	fmt.Println("Available Courts")
+	doc.Find(".booking div.book a.booking_link").Each(func(i int, s *goquery.Selection) {
+		bl, exists := s.Attr("href")
+		if exists {
+			fmt.Println("Booking Link: "+bl)
+		}
+	})
+
+	fmt.Println("Available to Rebook")
+	doc.Find(".booking div.cancelled a").Each(func(i int, s *goquery.Selection) {
+		fmt.Println("Call the club to book this court")
+	})
+
+	fmt.Println("Booked Courts")
+	doc.Find(".booking div.booked a").Each(func(i int, s *goquery.Selection) {
+		bl, exists := s.Attr("href")
+		if exists {
+			fmt.Println("Booking Link: "+bl+" "+s.Text())
+		}
+	})
+	// TODO: add some logic around if playerA and playerB are known
+}
+
+func main() {
+	ExampleScrape()
 }
