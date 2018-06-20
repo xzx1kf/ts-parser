@@ -9,3 +9,5 @@
 *.out
 
 *.swp
+
+ts-parser
