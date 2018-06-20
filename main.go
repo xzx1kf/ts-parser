@@ -4,20 +4,47 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-type booking struct {
-	court		int
-	days		int
-	hour		int
-	min		int
-	timeslot	int
-	playerA		string
-	playerB		string
-	booking_link	string
-	booked		bool
+type Bookings struct {
+	Date	int
+	Slots	[]BookingSlot
+}
+
+type BookingSlot struct {
+	Court		string
+	Days		string
+	Hour		string
+	Min		string
+	Timeslot	string
+	PlayerA		string
+	PlayerB		string
+	Booking_link	string
+	Booked		bool
+}
+
+func parseBookingUrl(link string) BookingSlot {
+	s := link[14:]
+	s = strings.Replace(s, "&amp", "", -1)
+	m, err := url.ParseQuery(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bs := BookingSlot {
+		Court:		m["court"][0],
+		Days:		m["days"][0],
+		Hour:		m["hour"][0],
+		Min:		m["min"][0],
+		Timeslot:	m["timeSlot"][0],
+		Booked:		false,
+	}
+
+	return bs
 }
 
 func ExampleScrape() {
@@ -39,7 +66,8 @@ func ExampleScrape() {
 	doc.Find(".booking div.book a.booking_link").Each(func(i int, s *goquery.Selection) {
 		bl, exists := s.Attr("href")
 		if exists {
-			fmt.Println("Booking Link: "+bl)
+			bs := parseBookingUrl(bl)
+			fmt.Println(bs)
 		}
 	})
 
