@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -48,7 +49,7 @@ func parseBookingUrl(link string) BookingSlot {
 	return bs
 }
 
-func ExampleScrape() {
+func GetBookings(w http.ResponseWriter, r *http.Request) {
 
 	slots := []BookingSlot{}
 
@@ -84,7 +85,7 @@ func ExampleScrape() {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	fmt.Println(string(bookings))
+	fmt.Fprintln(w, string(bookings))
 	/*
 	fmt.Println("Available to Rebook")
 	doc.Find(".booking div.cancelled a").Each(func(i int, s *goquery.Selection) {
@@ -103,5 +104,13 @@ func ExampleScrape() {
 }
 
 func main() {
-	ExampleScrape()
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", Index)
+	router.HandleFunc("/bookings", GetBookings)
+
+	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func Index(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Welcome!")
 }
