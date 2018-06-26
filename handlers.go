@@ -19,7 +19,7 @@ func GetBookings(w http.ResponseWriter, r *http.Request) {
 
 	bookings := Bookings{}
 
-	res, err := http.Get("http://tynemouth-squash.herokuapp.com/bookings?day=0")
+	res, err := http.Get("http://tynemouth-squash.herokuapp.com/bookings?day=21")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,6 +79,7 @@ func parseBookingUrl(link string) Booking {
 		Min:		m["min"][0],
 		Timeslot:	m["timeSlot"][0],
 		Booked:		false,
+		BookingLink:	link,
 	}
 
 	return bs

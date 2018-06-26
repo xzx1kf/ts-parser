@@ -8,7 +8,7 @@ type Booking struct {
 	Timeslot	string	`json:"timeslot"`
 	PlayerA		string	`json:"playerA"`
 	PlayerB		string	`json:"playerB"`
-	Booking_link	string	`json:"bookingLink"`
+	BookingLink	string	`json:"bookingLink"`
 	Booked		bool	`json:"booked"`
 }
 
