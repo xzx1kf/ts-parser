@@ -79,7 +79,7 @@ func parseBookingUrl(link string) Booking {
 		Min:		m["min"][0],
 		Timeslot:	m["timeSlot"][0],
 		Booked:		false,
-		BookingLink:	link,
+		BookingLink:	"http://tynemouth-squash.herokuapp.com" + link,
 	}
 
 	return bs
