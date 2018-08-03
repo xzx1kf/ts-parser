@@ -1,0 +1,52 @@
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+type Booking struct {
+	Court
+	Slot
+}
+
+type Court struct {
+	Id string
+}
+
+type Slot struct {
+	Time 	time.Time
+	Booked 	bool
+}
+
+func (b Booking) String() string {
+	var booked = ""
+	if b.Booked {
+		booked = "booked"
+	} else {
+		booked = "available"
+	}
+	return fmt.Sprintf("Court %v at %v is %v", b.Id, b.Time, booked)
+}
+
+func (b *Booking) Book() error {
+	b.Booked = true // replace with call to booking microservice
+	return nil
+}
+
+func (b *Booking) Cancel() error {
+	b.Booked = false // replace with call to booking microservice
+	return nil
+}
+
+func main() {
+	t, _ := time.Parse("15:04 02/01/2006", "14:40 22/08/2018")
+	s := Slot{t, false}
+	c := Court{"1"}
+	b := Booking{c, s}
+	
+	b.Book()
+	fmt.Println(b)
+	b.Cancel()
+	fmt.Println(b)
+}
